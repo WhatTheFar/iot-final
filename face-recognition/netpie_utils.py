@@ -22,8 +22,9 @@ def start_netpie(key, secret, appid, topics=None, on_message=None, debug=False):
     microgear.on_message = _on_message
     microgear.on_disconnect = on_disconnect
 
-    for topic in topics:
-        microgear.subscribe(topic)
+    if topics is not None:
+        for topic in topics:
+            microgear.subscribe(topic)
 
     microgear.connect(True)
 
