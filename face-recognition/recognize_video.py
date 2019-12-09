@@ -17,7 +17,7 @@ import os
 
 
 def start_recognize(detector_path, embedding_model_path, recognizer_path, label_encoder_path, min_confidence=0.5,
-                    debug=False):
+                    debug=False, callback=None):
     # load our serialized face detector from disk
     print("[INFO] loading face detector...")
     protoPath = os.path.sep.join([detector_path, "deploy.prototxt"])
@@ -62,6 +62,9 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
         detector_path.setInput(imageBlob)
         detections = detector_path.forward()
 
+        # all detected face with label and probability, to be passed as an output to callback
+        output = []
+
         # loop over the detections
         for i in range(0, detections.shape[2]):
             # extract the confidence (i.e., probability) associated with
@@ -97,6 +100,8 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
                 proba = preds[j]
                 name = label_encoder.classes_[j]
 
+                output.append({"name": name, "probability": proba, "box": (startX, startY, endX, endY)})
+
                 if debug:
                     # draw the bounding box of the face along with the
                     # associated probability
@@ -119,6 +124,9 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
             if key == ord("q"):
                 break
 
+        if callback is not None:
+            callback(output)
+
     # stop the timer and display FPS information
     fps.stop()
     print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
@@ -129,23 +137,23 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
     vs.stop()
 
 
-if __name__ == '__main__':
-    # construct the argument parser and parse the arguments
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--detector", required=True,
-                    help="path to OpenCV's deep learning face detector")
-    ap.add_argument("-m", "--embedding-model", required=True,
-                    help="path to OpenCV's deep learning face embedding model")
-    ap.add_argument("-r", "--recognizer", required=True,
-                    help="path to model trained to recognize faces")
-    ap.add_argument("-l", "--le", required=True,
-                    help="path to label encoder")
-    ap.add_argument("-c", "--confidence", type=float, default=0.5,
-                    help="minimum probability to filter weak detections")
-    ap.add_argument("--debug", default=False, action="store_true",
-                    help="non-headless and show frames for debugging")
-    args = vars(ap.parse_args())
-
-    start_recognize(detector_path=args["detector"], embedding_model_path=args["embedding_model"],
-                    recognizer_path=args["recognizer"], label_encoder_path=args["le"],
-                    min_confidence=args["confidence"], debug=args["debug"])
+# if __name__ == '__main__':
+#     # construct the argument parser and parse the arguments
+#     ap = argparse.ArgumentParser()
+#     ap.add_argument("--detector", required=True,
+#                     help="path to OpenCV's deep learning face detector")
+#     ap.add_argument("-m", "--embedding-model", required=True,
+#                     help="path to OpenCV's deep learning face embedding model")
+#     ap.add_argument("-r", "--recognizer", required=True,
+#                     help="path to model trained to recognize faces")
+#     ap.add_argument("-l", "--le", required=True,
+#                     help="path to label encoder")
+#     ap.add_argument("-c", "--confidence", type=float, default=0.5,
+#                     help="minimum probability to filter weak detections")
+#     ap.add_argument("--debug", default=False, action="store_true",
+#                     help="non-headless and show frames for debugging")
+#     args = vars(ap.parse_args())
+#
+#     start_recognize(detector_path=args["detector"], embedding_model_path=args["embedding_model"],
+#                     recognizer_path=args["recognizer"], label_encoder_path=args["le"],
+#                     min_confidence=args["confidence"], debug=args["debug"])
