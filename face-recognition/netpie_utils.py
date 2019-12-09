@@ -26,7 +26,7 @@ def start_netpie(key, secret, appid, topics=None, on_message=None, debug=False):
         for topic in topics:
             microgear.subscribe(topic)
 
-    microgear.connect(True)
+    microgear.connect(False)
 
 
 if __name__ == '__main__':
