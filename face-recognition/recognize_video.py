@@ -16,21 +16,22 @@ import cv2
 import os
 
 
-def start_recognize(debug=False):
+def start_recognize(detector_path, embedding_model_path, recognizer_path, label_encoder_path, min_confidence=0.5,
+                    debug=False):
     # load our serialized face detector from disk
     print("[INFO] loading face detector...")
-    protoPath = os.path.sep.join([args["detector"], "deploy.prototxt"])
-    modelPath = os.path.sep.join([args["detector"],
+    protoPath = os.path.sep.join([detector_path, "deploy.prototxt"])
+    modelPath = os.path.sep.join([detector_path,
                                   "res10_300x300_ssd_iter_140000.caffemodel"])
-    detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
+    detector_path = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
     # load our serialized face embedding model from disk
     print("[INFO] loading face recognizer...")
-    embedder = cv2.dnn.readNetFromTorch(args["embedding_model"])
+    embedder = cv2.dnn.readNetFromTorch(embedding_model_path)
 
     # load the actual face recognition model along with the label encoder
-    recognizer = pickle.loads(open(args["recognizer"], "rb").read())
-    le = pickle.loads(open(args["le"], "rb").read())
+    recognizer_path = pickle.loads(open(recognizer_path, "rb").read())
+    label_encoder = pickle.loads(open(label_encoder_path, "rb").read())
 
     # initialize the video stream, then allow the camera sensor to warm up
     print("[INFO] starting video stream...")
@@ -58,8 +59,8 @@ def start_recognize(debug=False):
 
         # apply OpenCV's deep learning-based face detector to localize
         # faces in the input image
-        detector.setInput(imageBlob)
-        detections = detector.forward()
+        detector_path.setInput(imageBlob)
+        detections = detector_path.forward()
 
         # loop over the detections
         for i in range(0, detections.shape[2]):
@@ -68,7 +69,7 @@ def start_recognize(debug=False):
             confidence = detections[0, 0, i, 2]
 
             # filter out weak detections
-            if confidence > args["confidence"]:
+            if confidence > min_confidence:
                 # compute the (x, y)-coordinates of the bounding box for
                 # the face
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
@@ -91,10 +92,10 @@ def start_recognize(debug=False):
                 vec = embedder.forward()
 
                 # perform classification to recognize the face
-                preds = recognizer.predict_proba(vec)[0]
+                preds = recognizer_path.predict_proba(vec)[0]
                 j = np.argmax(preds)
                 proba = preds[j]
-                name = le.classes_[j]
+                name = label_encoder.classes_[j]
 
                 if debug:
                     # draw the bounding box of the face along with the
@@ -145,4 +146,6 @@ if __name__ == '__main__':
                     help="non-headless and show frames for debugging")
     args = vars(ap.parse_args())
 
-    start_recognize(debug=args["debug"])
+    start_recognize(detector_path=args["detector"], embedding_model_path=args["embedding_model"],
+                    recognizer_path=args["recognizer"], label_encoder_path=args["le"],
+                    min_confidence=args["confidence"], debug=args["debug"])
