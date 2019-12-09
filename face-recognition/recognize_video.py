@@ -16,7 +16,7 @@ import cv2
 import os
 
 
-def start_recognize():
+def start_recognize(debug=False):
     # load our serialized face detector from disk
     print("[INFO] loading face detector...")
     protoPath = os.path.sep.join([args["detector"], "deploy.prototxt"])
@@ -96,25 +96,27 @@ def start_recognize():
                 proba = preds[j]
                 name = le.classes_[j]
 
-                # draw the bounding box of the face along with the
-                # associated probability
-                text = "{}: {:.2f}%".format(name, proba * 100)
-                y = startY - 10 if startY - 10 > 10 else startY + 10
-                cv2.rectangle(frame, (startX, startY), (endX, endY),
-                              (0, 0, 255), 2)
-                cv2.putText(frame, text, (startX, y),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
+                if debug:
+                    # draw the bounding box of the face along with the
+                    # associated probability
+                    text = "{}: {:.2f}%".format(name, proba * 100)
+                    y = startY - 10 if startY - 10 > 10 else startY + 10
+                    cv2.rectangle(frame, (startX, startY), (endX, endY),
+                                  (0, 0, 255), 2)
+                    cv2.putText(frame, text, (startX, y),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
 
         # update the FPS counter
         fps.update()
 
-        # show the output frame
-        cv2.imshow("Frame", frame)
-        key = cv2.waitKey(1) & 0xFF
+        if debug:
+            # show the output frame
+            cv2.imshow("Frame", frame)
+            key = cv2.waitKey(1) & 0xFF
 
-        # if the `q` key was pressed, break from the loop
-        if key == ord("q"):
-            break
+            # if the `q` key was pressed, break from the loop
+            if key == ord("q"):
+                break
 
     # stop the timer and display FPS information
     fps.stop()
@@ -129,7 +131,7 @@ def start_recognize():
 if __name__ == '__main__':
     # construct the argument parser and parse the arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-d", "--detector", required=True,
+    ap.add_argument("--detector", required=True,
                     help="path to OpenCV's deep learning face detector")
     ap.add_argument("-m", "--embedding-model", required=True,
                     help="path to OpenCV's deep learning face embedding model")
@@ -139,6 +141,8 @@ if __name__ == '__main__':
                     help="path to label encoder")
     ap.add_argument("-c", "--confidence", type=float, default=0.5,
                     help="minimum probability to filter weak detections")
+    ap.add_argument("--debug", default=False, action="store_true",
+                    help="non-headless and show frames for debugging")
     args = vars(ap.parse_args())
 
-    start_recognize()
+    start_recognize(debug=args["debug"])
