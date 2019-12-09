@@ -2,6 +2,7 @@ import argparse
 import numpy as np
 
 import recognize_video
+import netpie_utils
 
 if __name__ == '__main__':
     # construct the argument parser and parse the arguments
@@ -18,6 +19,12 @@ if __name__ == '__main__':
                     help="minimum probability to filter weak detections")
     ap.add_argument("--debug", default=False, action="store_true",
                     help="non-headless and show frames for debugging")
+
+    # netpie
+    ap.add_argument("--key", required=True, help="NETPIE key")
+    ap.add_argument("--secret", required=True, help="NETPIE secret")
+    ap.add_argument("--appid", required=True, help="NETPIE appid")
+
     args = vars(ap.parse_args())
 
     last_recognized_label = None
@@ -64,6 +71,8 @@ if __name__ == '__main__':
         label = output[max_size_index]["name"]
         process_recognized_label(label)
 
+
+    netpie_utils.start_netpie(key=args["key"], secret=args["secret"], appid=args["appid"], debug=args["debug"])
 
     recognize_video.start_recognize(detector_path=args["detector"], embedding_model_path=args["embedding_model"],
                                     recognizer_path=args["recognizer"], label_encoder_path=args["le"],
