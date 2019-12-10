@@ -1,5 +1,6 @@
 import argparse
 import numpy as np
+import microgear.client as microgear
 
 import recognize_video
 import netpie_utils
@@ -32,13 +33,19 @@ if __name__ == '__main__':
     current_recognizing_label = None
     new_label_debounce_count = 0
 
+    is_match_sent = False
+
 
     def on_recognition_match():
-        pass
+        global is_match_sent
+
+        if is_match_sent is False:
+            microgear.publish("/security/off", "true")
+            is_match_sent = True
 
 
     def process_recognized_label(label=None):
-        global last_recognized_label, last_label_count, current_recognizing_label, new_label_debounce_count
+        global last_recognized_label, last_label_count, current_recognizing_label, new_label_debounce_count, is_match_sent
 
         if label != last_recognized_label:
             if label != current_recognizing_label:
@@ -50,6 +57,7 @@ if __name__ == '__main__':
                     new_label_debounce_count = 0
                     last_recognized_label = label
                     last_label_count = 0
+                    is_match_sent = False
         else:
             last_label_count += 1
             if last_label_count >= 24:
