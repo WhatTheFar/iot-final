@@ -59,7 +59,9 @@ if __name__ == '__main__':
         global last_recognized_label, is_match_processed
 
         if is_match_processed is False:
+            logging.info("Face recognized: {}".format(last_recognized_label))
             if last_recognized_label is not None and last_recognized_label != "unknown":
+                logging.info("Turn off security command dispatched by {}".format(last_recognized_label))
                 microgear.publish("/security/off", "true")
             is_match_processed = True
 
