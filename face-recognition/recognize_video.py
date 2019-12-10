@@ -17,7 +17,7 @@ import os
 
 
 def start_recognize(detector_path, embedding_model_path, recognizer_path, label_encoder_path, min_confidence=0.5,
-                    debug=False, callback=None):
+                    debug=False, use_pi_camera=False, callback=None):
     # load our serialized face detector from disk
     print("[INFO] loading face detector...")
     protoPath = os.path.sep.join([detector_path, "deploy.prototxt"])
@@ -35,7 +35,7 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
 
     # initialize the video stream, then allow the camera sensor to warm up
     print("[INFO] starting video stream...")
-    vs = VideoStream(src=0).start()
+    vs = VideoStream(src=0, usePiCamera=use_pi_camera).start()
     time.sleep(2.0)
 
     # start the FPS throughput estimator

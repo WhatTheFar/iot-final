@@ -21,6 +21,10 @@ if __name__ == '__main__':
     ap.add_argument("--debug", default=False, action="store_true",
                     help="non-headless and show frames for debugging")
 
+    # Raspberry Pi
+    ap.add_argument("--pi", "--use-pi-camera", default=False, action="store_true",
+                    help="use Pi camera instead of webcam")
+
     # netpie
     ap.add_argument("--key", required=True, help="NETPIE key")
     ap.add_argument("--secret", required=True, help="NETPIE secret")
@@ -84,5 +88,5 @@ if __name__ == '__main__':
 
     recognize_video.start_recognize(detector_path=args["detector"], embedding_model_path=args["embedding_model"],
                                     recognizer_path=args["recognizer"], label_encoder_path=args["le"],
-                                    min_confidence=args["confidence"], debug=args["debug"],
+                                    min_confidence=args["confidence"], debug=args["debug"], use_pi_camera=args['pi'],
                                     callback=face_recognition_callback)
