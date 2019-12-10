@@ -1,6 +1,8 @@
 import argparse
 import numpy as np
 import microgear.client as microgear
+import logging
+from logging.handlers import TimedRotatingFileHandler
 
 import recognize_video
 import netpie_utils
@@ -31,6 +33,19 @@ if __name__ == '__main__':
     ap.add_argument("--appid", required=True, help="NETPIE appid")
 
     args = vars(ap.parse_args())
+
+    # initialize logging configuration
+    logging_handlers = []
+    if args['debug'] is True:
+        logging_level = logging.DEBUG
+        logging_handlers.append(logging.StreamHandler())
+    else:
+        logging_level = logging.INFO
+        logging_handlers.append(TimedRotatingFileHandler('./log/app.log', when="midnight", interval=1))
+
+    logging.basicConfig(level=logging_level,
+                        handlers=logging_handlers,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     last_recognized_label = None
     last_label_count = 0
