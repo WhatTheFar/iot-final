@@ -37,19 +37,20 @@ if __name__ == '__main__':
     current_recognizing_label = None
     new_label_debounce_count = 0
 
-    is_match_sent = False
+    is_match_processed = False
 
 
     def on_recognition_match():
-        global is_match_sent
+        global last_recognized_label, is_match_processed
 
-        if is_match_sent is False:
-            microgear.publish("/security/off", "true")
-            is_match_sent = True
+        if is_match_processed is False:
+            if last_recognized_label is not None and last_recognized_label != "unknown":
+                microgear.publish("/security/off", "true")
+            is_match_processed = True
 
 
     def process_recognized_label(label=None):
-        global last_recognized_label, last_label_count, current_recognizing_label, new_label_debounce_count, is_match_sent
+        global last_recognized_label, last_label_count, current_recognizing_label, new_label_debounce_count, is_match_processed
 
         if label != last_recognized_label:
             if label != current_recognizing_label:
@@ -61,7 +62,7 @@ if __name__ == '__main__':
                     new_label_debounce_count = 0
                     last_recognized_label = label
                     last_label_count = 0
-                    is_match_sent = False
+                    is_match_processed = False
         else:
             last_label_count += 1
             if last_label_count >= 24:
