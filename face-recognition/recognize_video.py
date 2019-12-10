@@ -137,23 +137,23 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
     vs.stop()
 
 
-# if __name__ == '__main__':
-#     # construct the argument parser and parse the arguments
-#     ap = argparse.ArgumentParser()
-#     ap.add_argument("--detector", required=True,
-#                     help="path to OpenCV's deep learning face detector")
-#     ap.add_argument("-m", "--embedding-model", required=True,
-#                     help="path to OpenCV's deep learning face embedding model")
-#     ap.add_argument("-r", "--recognizer", required=True,
-#                     help="path to model trained to recognize faces")
-#     ap.add_argument("-l", "--le", required=True,
-#                     help="path to label encoder")
-#     ap.add_argument("-c", "--confidence", type=float, default=0.5,
-#                     help="minimum probability to filter weak detections")
-#     ap.add_argument("--debug", default=False, action="store_true",
-#                     help="non-headless and show frames for debugging")
-#     args = vars(ap.parse_args())
-#
-#     start_recognize(detector_path=args["detector"], embedding_model_path=args["embedding_model"],
-#                     recognizer_path=args["recognizer"], label_encoder_path=args["le"],
-#                     min_confidence=args["confidence"], debug=args["debug"])
+if __name__ == '__main__':
+    # construct the argument parser and parse the arguments
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--detector", required=True,
+                    help="path to OpenCV's deep learning face detector")
+    ap.add_argument("-m", "--embedding-model", required=True,
+                    help="path to OpenCV's deep learning face embedding model")
+    ap.add_argument("-r", "--recognizer", required=True,
+                    help="path to model trained to recognize faces")
+    ap.add_argument("-l", "--le", required=True,
+                    help="path to label encoder")
+    ap.add_argument("-c", "--confidence", type=float, default=0.5,
+                    help="minimum probability to filter weak detections")
+    ap.add_argument("--debug", default=False, action="store_true",
+                    help="non-headless and show frames for debugging")
+    args = vars(ap.parse_args())
+
+    start_recognize(detector_path=args["detector"], embedding_model_path=args["embedding_model"],
+                    recognizer_path=args["recognizer"], label_encoder_path=args["le"],
+                    min_confidence=args["confidence"], debug=args["debug"])
