@@ -14,19 +14,20 @@ import pickle
 import time
 import cv2
 import os
+import logging
 
 
 def start_recognize(detector_path, embedding_model_path, recognizer_path, label_encoder_path, min_confidence=0.5,
                     debug=False, use_pi_camera=False, callback=None):
     # load our serialized face detector from disk
-    print("[INFO] loading face detector...")
+    logging.info("[System] loading face detector...")
     protoPath = os.path.sep.join([detector_path, "deploy.prototxt"])
     modelPath = os.path.sep.join([detector_path,
                                   "res10_300x300_ssd_iter_140000.caffemodel"])
     detector_path = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
     # load our serialized face embedding model from disk
-    print("[INFO] loading face recognizer...")
+    logging.info("[System] loading face recognizer...")
     embedder = cv2.dnn.readNetFromTorch(embedding_model_path)
 
     # load the actual face recognition model along with the label encoder
@@ -34,7 +35,7 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
     label_encoder = pickle.loads(open(label_encoder_path, "rb").read())
 
     # initialize the video stream, then allow the camera sensor to warm up
-    print("[INFO] starting video stream...")
+    logging.info("[System] starting video stream...")
     vs = VideoStream(src=0, usePiCamera=use_pi_camera).start()
     time.sleep(2.0)
 
@@ -129,8 +130,8 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
 
     # stop the timer and display FPS information
     fps.stop()
-    print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
-    print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+    logging.info("[System] elasped time: {:.2f}".format(fps.elapsed()))
+    logging.info("[System] approx. FPS: {:.2f}".format(fps.fps()))
 
     # do a bit of cleanup
     cv2.destroyAllWindows()
