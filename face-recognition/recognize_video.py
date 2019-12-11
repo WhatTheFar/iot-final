@@ -7,18 +7,20 @@
 # import the necessary packages
 from imutils.video import VideoStream
 from imutils.video import FPS
+from imutils.face_utils import FaceAligner
 import numpy as np
 import argparse
 import imutils
 import pickle
 import time
 import cv2
+import dlib
 import os
 import logging
 
 
 def start_recognize(detector_path, embedding_model_path, recognizer_path, label_encoder_path, min_confidence=0.5,
-                    debug=False, use_pi_camera=False, callback=None):
+                    debug=False, use_pi_camera=False, align_face=False, callback=None):
     # load our serialized face detector from disk
     logging.info("[System] loading face detector...")
     protoPath = os.path.sep.join([detector_path, "deploy.prototxt"])
@@ -33,6 +35,14 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
     # load the actual face recognition model along with the label encoder
     recognizer_path = pickle.loads(open(recognizer_path, "rb").read())
     label_encoder = pickle.loads(open(label_encoder_path, "rb").read())
+
+    if align_face is True:
+        # initialize dlib's face detector (HOG-based) and then create
+        # the facial landmark predictor and the face aligner
+        predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+        fa = FaceAligner(predictor, desiredFaceWidth=256)
+    else:
+        fa = None
 
     # initialize the video stream, then allow the camera sensor to warm up
     logging.info("[System] starting video stream...")
@@ -87,6 +97,17 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
                 if fW < 20 or fH < 20:
                     continue
 
+                if args["align_face"] is True:
+                    if fa is not None:
+                        top = startY
+                        bottom = endY
+                        left = startX
+                        right = endX
+
+                        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                        rect = dlib.rectangle(left, top, right, bottom)
+                        face = fa.align(image, gray, rect)
+
                 # construct a blob for the face ROI, then pass the blob
                 # through our face embedding model to obtain the 128-d
                 # quantification of the face
@@ -119,6 +140,7 @@ def start_recognize(detector_path, embedding_model_path, recognizer_path, label_
         if debug:
             # show the output frame
             cv2.imshow("Frame", frame)
+            cv2.waitKey(0)
             key = cv2.waitKey(1) & 0xFF
 
             # if the `q` key was pressed, break from the loop
