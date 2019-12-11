@@ -81,9 +81,10 @@ if __name__ == '__main__':
                     last_label_count = 0
                     is_match_processed = False
         else:
-            last_label_count += 1
             if last_label_count >= 24:
                 on_recognition_match()
+            else:
+                last_label_count += 1
 
 
     def face_recognition_callback(output):
