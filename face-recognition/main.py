@@ -66,8 +66,21 @@ if __name__ == '__main__':
             is_match_processed = True
 
 
-    def process_recognized_label(label=None):
+    def process_unrecognized_label():
         global last_recognized_label, last_label_count, current_recognizing_label, new_label_debounce_count, is_match_processed
+
+        last_recognized_label = None
+        last_label_count = 0
+        current_recognizing_label = None
+        new_label_debounce_count = 0
+        is_match_processed = False
+
+
+    def process_recognized_label(label, probability):
+        global last_recognized_label, last_label_count, current_recognizing_label, new_label_debounce_count, is_match_processed
+
+        if probability < 0.80:
+            label = "unknown"
 
         if label != last_recognized_label:
             if label != current_recognizing_label:
@@ -81,6 +94,7 @@ if __name__ == '__main__':
                     last_label_count = 0
                     is_match_processed = False
         else:
+            new_label_debounce_count = 0
             if last_label_count >= 24:
                 on_recognition_match()
             else:
@@ -89,7 +103,7 @@ if __name__ == '__main__':
 
     def face_recognition_callback(output):
         if len(output) == 0:
-            process_recognized_label()
+            process_unrecognized_label()
             return
 
         def sum_size(v):
@@ -100,7 +114,8 @@ if __name__ == '__main__':
         max_size_index = np.argmax(size)
 
         label = output[max_size_index]["name"]
-        process_recognized_label(label)
+        proba = output[max_size_index]["probability"]
+        process_recognized_label(label=label, probability=proba)
 
 
     netpie_utils.start_netpie(key=args["key"], secret=args["secret"], appid=args["appid"], debug=args["debug"])
