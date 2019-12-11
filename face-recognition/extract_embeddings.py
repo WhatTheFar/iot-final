@@ -4,12 +4,14 @@
 
 # import the necessary packages
 from imutils import paths
+from imutils.face_utils import FaceAligner
 import numpy as np
 import argparse
 import imutils
 import pickle
 import cv2
 import os
+import dlib
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -23,6 +25,11 @@ ap.add_argument("-m", "--embedding-model", required=True,
                 help="path to OpenCV's deep learning face embedding model")
 ap.add_argument("-c", "--confidence", type=float, default=0.5,
                 help="minimum probability to filter weak detections")
+
+# face alignment
+ap.add_argument("--align-face", default=False, action="store_true",
+                help="align face before extract face embedding")
+
 args = vars(ap.parse_args())
 
 # load our serialized face detector from disk
@@ -47,6 +54,15 @@ knownNames = []
 
 # initialize the total number of faces processed
 total = 0
+
+if args["align_face"] is True:
+    # initialize dlib's face detector (HOG-based) and then create
+    # the facial landmark predictor and the face aligner
+    # detector2 = dlib.get_frontal_face_detector()
+    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+    fa = FaceAligner(predictor, desiredFaceWidth=256)
+else:
+    fa = None
 
 # loop over the image paths
 for (i, imagePath) in enumerate(imagePaths):
@@ -96,6 +112,17 @@ for (i, imagePath) in enumerate(imagePaths):
             if fW < 20 or fH < 20:
                 continue
 
+            if args["align_face"] is True:
+                if fa is not None:
+                    top = startY
+                    bottom = endY
+                    left = startX
+                    right = endX
+
+                    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                    rect = dlib.rectangle(left, top, right, bottom)
+                    face = fa.align(image, gray, rect)
+
             # construct a blob for the face ROI, then pass the blob
             # through our face embedding model to obtain the 128-d
             # quantification of the face
@@ -115,4 +142,5 @@ print("[INFO] serializing {} encodings...".format(total))
 data = {"embeddings": knownEmbeddings, "names": knownNames}
 f = open(args["embeddings"], "wb")
 f.write(pickle.dumps(data))
+
 f.close()
