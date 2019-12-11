@@ -88,14 +88,14 @@ if __name__ == '__main__':
                 current_recognizing_label = label
             else:
                 new_label_debounce_count += 1
-                if new_label_debounce_count >= 5:
+                if new_label_debounce_count >= 3:
                     new_label_debounce_count = 0
                     last_recognized_label = label
                     last_label_count = 0
                     is_match_processed = False
         else:
             new_label_debounce_count = 0
-            if last_label_count >= 24:
+            if last_label_count >= 10:
                 on_recognition_match()
             else:
                 last_label_count += 1
